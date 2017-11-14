@@ -41,7 +41,7 @@ void setup() {
 void loop() {
   // print the string when a newline arrives:
   if(Serial1.available() > 0){
-        str = Serial1.readStringUntil('%');
+        str = Serial1.readStringUntil('\n');
         angle = str.substring(0,3).toInt()-100;
         distance = str.substring(4).toInt();
         if(angle >= 0 && angle < 360 && distance < 10000){
