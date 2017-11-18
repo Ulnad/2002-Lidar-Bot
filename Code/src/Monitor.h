@@ -11,11 +11,11 @@ class Monitor{
   public:
     Monitor(int state);
     void setup();
-    void run(int max, double x[], double y[]);
+    void run(int max, int x[], int y[]);
   private:
     int _state;
-    int Px[360];
-    int Py[360];
+    int Px[180];
+    int Py[180];
 };
 
 #endif

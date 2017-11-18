@@ -107,8 +107,8 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
 Monitor::Monitor(int state){
   _state = state;
-  for(int i = 0; i < 360; i++){
-    Px[i] = 500;
+  for(int i = 0; i < 180; i++){
+    Px[i] = 100;
     Py[i] = 500;
   }
 }
@@ -128,7 +128,7 @@ void Monitor::setup(){
   buttons[1].drawButton();
 }
 
-void Monitor::run(int max, double x[], double y[]){
+void Monitor::run(int max, int x[], int y[]){
   if(_state == 1){
     digitalWrite(13, HIGH);
     TSPoint p = ts.getPoint();
@@ -161,10 +161,12 @@ void Monitor::run(int max, double x[], double y[]){
   }
   // 480x320
   else if(_state == 3){
-    for(int i = 0; i < 360; i++){
+    for(int i = 0; i < 180; i++){
       tft.fillCircle(Px[i], Py[i], 1, BLACK);
-      Px[i] = ((LIDAR_SIZE-3)*x[i])/max + 160;
-      Py[i] = 240 - ((LIDAR_SIZE-3)*y[i])/max;
+      // Px[i] = ((LIDAR_SIZE-3)*x[i])/max + 160;
+      // Py[i] = 240 - ((LIDAR_SIZE-3)*y[i])/max;
+      Px[i] = ((int)((double)((double)(LIDAR_SIZE-3)/(double)max)*x[i])) + 160;
+      Py[i] = 240 - ((int)((double)((double)(LIDAR_SIZE-3)/(double)max)*y[i]));
       tft.fillCircle(Px[i], Py[i], 1, ILI9341_LIGHTGREY);
     }
     tft.setCursor(30,450);

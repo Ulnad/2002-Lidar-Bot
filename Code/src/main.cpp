@@ -4,31 +4,30 @@ String str;         // a String to hold incoming data
 int angle;
 int distance;
 int maxDist = 0;
-int position[360]; //stores lidar data
-double x[360];
-double y[360];
+int position[180]; //stores lidar data
+int x[180];
+int y[180];
 const int angleCalibration = 0;
 Monitor screen(1);
 
 //FUNCTIONS:
 void updateFrame(){
   maxDist = 0;
-  for(int i = 0; i < 360; i++){
+  for(int i = 0; i < 180; i++){
     if(position[i]>maxDist)
       maxDist = position[i];
-    y[i] = (double)position[i]*cos(((double)i * 71) / 4068);
-    x[i] = (double)position[i]*sin(((double)i * 71) / 4068);
-    // Serial.print(i);
-    // Serial.print(" ");
-    // Serial.println(position[i]);
+    y[i] = (int)((double)position[i]*cos(((double)i * 71 *2) / 4068));
+    x[i] = (int)((double)position[i]*sin(((double)i * 71 *2) / 4068));
+
   }
+
 }
 
 void setup() {
   Serial.begin(115200);
   Serial1.begin(115200);
   Serial.println("Initalized");
-  for(int i = 0; i < 360; i++){
+  for(int i = 0; i < 180; i++){
     position[i] = 1000; //set all angle positions into 1m
   }
   // position[0] =200;
@@ -43,15 +42,15 @@ void loop() {
   if(Serial1.available() > 0){
         str = Serial1.readStringUntil('\n');
         angle = str.substring(0,3).toInt()-100;
-        distance = str.substring(4).toInt();
+        distance = str.substring(3).toInt();
         if(angle >= 0 && angle < 360 && distance < 10000){
-          Serial.println(angle);
-          position[360-angle] = distance;
+          position[(359-angle)/2] = distance;
         }
-    }
+  }
+  else{
   if(millis() % 1000 == 500)
     updateFrame();
   if(millis() % 1000 == 0)
     screen.run(maxDist,x,y);
-
+}
 }
