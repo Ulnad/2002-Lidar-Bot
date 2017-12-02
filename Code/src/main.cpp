@@ -48,9 +48,9 @@ void loop() {
         }
   }
   else{
-  if(millis() % 1000 == 500)
+  if(millis() % 1200 == 600)
     updateFrame();
-  if(millis() % 1000 == 0)
+  if(millis() % 1200 == 0)
     screen.run(maxDist,x,y);
 }
 }
