@@ -1,15 +1,76 @@
 #include <Arduino.h>
 #include <Monitor.h>
 String str;         // a String to hold incoming data
+const int minCandleSpace = 110;
+const int maxContinous = 70;
+int contCounter = 1;
+bool findPosEdge = true;
 int angle;
 int distance;
 int maxDist = 0;
+int candle = -99;
 int position[180]; //stores lidar data
 int x[180];
 int y[180];
 const int angleCalibration = 0;
 Monitor screen(1);
 
+int findCandle(){
+  // for(int i = 0; i < 179; i++){
+  //   if(contCounter > 12){
+  //     findPosEdge = true;
+  //     contCounter = 1;
+  //   }
+  //   if(position[i] - position[i+1] > minCandleSpace && findPosEdge){
+  //     findPosEdge = false;
+  //   }
+  //   else if(abs(position[i] - position[i+1]) < maxContinous && !findPosEdge){
+  //     contCounter++;
+  //   }
+  //   else if(position[i+1] - position[i] > minCandleSpace && contCounter >=2 && !findPosEdge){
+  //     findPosEdge = true;
+  //     contCounter = 1;
+  //     return i-(contCounter/2);
+  //   }
+  // }
+  // findPosEdge = true;
+  // contCounter = 1;
+  // return -1;
+  for(int a = 134; a < 225; a++){
+    int i = a%180;
+    if(position[i] < 500){
+      if(contCounter > 20){
+        findPosEdge = true;
+        contCounter = 1;
+      }
+    }
+    else{
+      if(contCounter > 12){
+        findPosEdge = true;
+        contCounter = 1;
+      }
+    }
+    if(position[i] - position[i+1] > minCandleSpace && findPosEdge){
+      findPosEdge = false;
+    }
+    else if(abs(position[i] - position[i+1]) < maxContinous && !findPosEdge){
+      contCounter++;
+    }
+    else if(position[i+1] - position[i] > minCandleSpace && contCounter >=2 && !findPosEdge){
+      findPosEdge = true;
+      contCounter = 1;
+      if(i-(contCounter/2) < 0){
+        return (180-(i-(contCounter/2)))*2;
+      }
+      else{
+        return (i-(contCounter/2))*2;
+      }
+    }
+  }
+  findPosEdge = true;
+  contCounter = 1;
+  return -99;
+}
 //FUNCTIONS:
 void updateFrame(){
   maxDist = 0;
@@ -35,6 +96,7 @@ void setup() {
   // position[90] =200;
   // position[270] =200;
   screen.setup();
+  pinMode(50, OUTPUT);
 }
 
 void loop() {
@@ -51,6 +113,17 @@ void loop() {
   if(millis() % 1200 == 600)
     updateFrame();
   if(millis() % 1200 == 0)
-    screen.run(maxDist,x,y);
-}
+    screen.run(candle,x,y);
+  }
+
+  if(millis()%400 == 0){
+    candle = findCandle();
+    if(findCandle()!=-99){
+      digitalWrite(50, HIGH);
+    }
+    else{
+      digitalWrite(50, LOW);
+    }
+  }
+
 }

@@ -135,6 +135,10 @@ void Monitor::run(int max, int x[], int y[]){
     digitalWrite(13, LOW);
     pinMode(XM, OUTPUT);
     pinMode(YP, OUTPUT);
+    tft.setCursor(146,12);
+    tft.setTextColor(TEXT_TCOLOR, ILI9341_YELLOW);
+    tft.setTextSize(6);
+    tft.print(max);
     if (p.z > 10 && p.z < 1000){
       int temp = p.x;
       p.x = p.y;
