@@ -128,7 +128,7 @@ void Monitor::setup(){
   buttons[1].drawButton();
 }
 
-void Monitor::run(int max, int x[], int y[]){
+void Monitor::run(int print,int max, int x[], int y[]){
   if(_state == 1){
     digitalWrite(13, HIGH);
     TSPoint p = ts.getPoint();
@@ -138,7 +138,9 @@ void Monitor::run(int max, int x[], int y[]){
     tft.setCursor(146,12);
     tft.setTextColor(TEXT_TCOLOR, ILI9341_YELLOW);
     tft.setTextSize(6);
-    tft.print(max);
+    tft.print("~~~~");
+    tft.setCursor(146,12);
+    tft.print(print);
     if (p.z > 10 && p.z < 1000){
       int temp = p.x;
       p.x = p.y;
@@ -176,7 +178,9 @@ void Monitor::run(int max, int x[], int y[]){
     tft.setCursor(30,450);
     tft.setTextColor(TEXT_TCOLOR, ILI9341_DARKGREY);
     tft.setTextSize(3);
-    tft.print(max);
+    tft.print("~~~~~");
+    tft.setCursor(30,450);
+    tft.print(print);
   }
 
 }

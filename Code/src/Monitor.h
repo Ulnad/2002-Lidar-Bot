@@ -11,7 +11,7 @@ class Monitor{
   public:
     Monitor(int state);
     void setup();
-    void run(int max, int x[], int y[]);
+    void run(int print,int max, int x[], int y[]);
   private:
     int _state;
     int Px[180];

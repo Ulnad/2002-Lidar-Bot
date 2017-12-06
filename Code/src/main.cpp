@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <Monitor.h>
 String str;         // a String to hold incoming data
-const int minCandleSpace = 110;
-const int maxContinous = 70;
+const int minCandleSpace = 300;
+const int maxContinous = 100;
 int contCounter = 1;
 bool findPosEdge = true;
 int angle;
@@ -16,55 +16,43 @@ const int angleCalibration = 0;
 Monitor screen(1);
 
 int findCandle(){
-  // for(int i = 0; i < 179; i++){
-  //   if(contCounter > 12){
-  //     findPosEdge = true;
-  //     contCounter = 1;
-  //   }
-  //   if(position[i] - position[i+1] > minCandleSpace && findPosEdge){
-  //     findPosEdge = false;
-  //   }
-  //   else if(abs(position[i] - position[i+1]) < maxContinous && !findPosEdge){
-  //     contCounter++;
-  //   }
-  //   else if(position[i+1] - position[i] > minCandleSpace && contCounter >=2 && !findPosEdge){
-  //     findPosEdge = true;
-  //     contCounter = 1;
-  //     return i-(contCounter/2);
-  //   }
-  // }
-  // findPosEdge = true;
-  // contCounter = 1;
-  // return -1;
+  int minCandleAmt = 2;
+  int maxCandleAmt = 10;
   for(int a = 134; a < 225; a++){
     int i = a%180;
-    if(position[i] < 500){
-      if(contCounter > 20){
+    if(contCounter > maxCandleAmt){ //reset if gap too large
         findPosEdge = true;
         contCounter = 1;
-      }
     }
-    else{
-      if(contCounter > 12){
-        findPosEdge = true;
-        contCounter = 1;
-      }
-    }
-    if(position[i] - position[i+1] > minCandleSpace && findPosEdge){
+    if(position[i] - position[i+1] > minCandleSpace && findPosEdge){ //found positive edge
       findPosEdge = false;
     }
-    else if(abs(position[i] - position[i+1]) < maxContinous && !findPosEdge){
+    else if(abs(position[i-contCounter+1] - position[i+1]) < maxContinous && !findPosEdge){ //add if within continous range
       contCounter++;
     }
-    else if(position[i+1] - position[i] > minCandleSpace && contCounter >=2 && !findPosEdge){
+    else if(position[i+1] - position[i] > minCandleSpace && !findPosEdge){ //return if bigger than min and negative edge
+      findPosEdge = true;
+      if(contCounter >=minCandleAmt){
+        int deg1 = i-contCounter; //deg2 = i
+        // len1 = position[deg1]    len2 = position[i]
+        int candleWidth = sqrt((double)position[deg1]*(double)position[deg1]+(double)position[i]*(double)position[i]-(2*(double)position[deg1]*(double)position[i]*cos((double)(deg1-i)*2.0*57.29578)));
+        if(i-(contCounter/2) < 0){
+          int ret = (180-(i-(contCounter/2)))*2;
+          contCounter = 1;
+          return candleWidth;
+        }
+        else{
+          int ret =  (i-(contCounter/2))*2;
+          contCounter = 1;
+          return candleWidth;
+        }
+      }
+      contCounter = 1;
+    }
+    else if(!(abs(position[i-contCounter+1] - position[i+1]) < maxContinous) && !findPosEdge){ //resets if not continous
+      a--;
       findPosEdge = true;
       contCounter = 1;
-      if(i-(contCounter/2) < 0){
-        return (180-(i-(contCounter/2)))*2;
-      }
-      else{
-        return (i-(contCounter/2))*2;
-      }
     }
   }
   findPosEdge = true;
@@ -113,7 +101,7 @@ void loop() {
   if(millis() % 1200 == 600)
     updateFrame();
   if(millis() % 1200 == 0)
-    screen.run(candle,x,y);
+    screen.run(candle,maxDist,x,y);
   }
 
   if(millis()%400 == 0){
