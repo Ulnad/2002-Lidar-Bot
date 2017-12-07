@@ -8,6 +8,7 @@ int position[180]; //stores lidar data
 int x[180];
 int y[180];
 const int angleCalibration = 0;
+char input;
 Monitor screen(1);
 
 //FUNCTIONS:
@@ -26,6 +27,7 @@ void updateFrame(){
 void setup() {
   Serial.begin(115200);
   Serial1.begin(115200);
+  Serial2.begin(115200);
   Serial.println("Initalized");
   for(int i = 0; i < 180; i++){
     position[i] = 1000; //set all angle positions into 1m
@@ -52,5 +54,9 @@ void loop() {
     updateFrame();
   if(millis() % 1200 == 0)
     screen.run(maxDist,x,y);
-}
+  }
+  if(Serial3.available() > 0){
+    input = Serial3.read();
+  }
+
 }
