@@ -5,8 +5,8 @@
 
 double SetpointL, InputL, OutputL;
 double SetpointR, InputR, OutputR;
-const double Kp =2.8, Ki = 0, Kd = 0;
-const double Kpt =4.9, Kit = 0, Kdt = 0.07;
+const double Kp =2.8, Ki = 0.01, Kd = 0;
+const double Kpt =4.9, Kit = 0.01, Kdt = 0.07;
 const double Kp1 = 1.1, Ki1 = 0.01, Kd1 = 0.1;
 const double KpTurn = 6;
 const double KpStright = 2.5;
@@ -14,17 +14,23 @@ const double KpStright = 2.5;
 PID PIDL(&InputL, &OutputL, &SetpointL, Kp, Ki, Kd, DIRECT);
 PID PIDR(&InputR, &OutputR, &SetpointR, Kp, Ki, Kd, DIRECT);
 
-static enum states {turnState, straightState}
+static enum states {turnState, straightState, wait, blowCandle, goBack}
 state;
 
+int inL;
+int inR;
+int turnAngle;
+int goDistance;
 Servo L;
 Servo R;
 bool add;
+bool goAfterTurn;
 bool firstCheck;
 int turnError;
 double startError;
 double avgTurn;
 int checkPrev = 0;
+String str;
 Encoder encL(2,3);
 Encoder encR(18,19);
 int mapToServo(double num){
@@ -67,7 +73,6 @@ double degToMM(double deg){
 }
 
 void runPID(){
-
   InputL = encL.read()/17.8643;
   InputR = encR.read()/17.8643;
   PIDL.Compute();
@@ -123,7 +128,17 @@ void runPID(){
 //   }
 // }
 
-void turn(double deg){
+void turn(double inp){//takes -180 to 360
+//0-180 turns right
+//181-360 turns left
+//-180 to 0 turns left
+  int deg;
+  if(inp> 180){
+    deg = 360-inp;
+  }
+  else{
+    deg = -1*inp;
+  }
   if(add){
     SetpointL -= degToMM(deg);
     SetpointR += degToMM(deg);
@@ -132,9 +147,9 @@ void turn(double deg){
     avgTurn = (InputL + InputR) /2;
     add = false;
   }
+  // turnError = 20;
   InputL = encL.read()*0.1340413;
   InputR = encR.read()*0.1340413;
-  // turnError = 20;
   turnError = (((InputL+InputR)/2)-avgTurn)*KpTurn; //pos = right faster
   runPID();
   if(firstCheck){
@@ -142,8 +157,14 @@ void turn(double deg){
       firstCheck = false;
       PIDL.SetTunings(Kp, Ki, Kd);
       PIDR.SetTunings(Kp, Ki, Kd);
-      //state = straightState;
-      //add = true;
+      if(goAfterTurn){
+        state = straightState;
+        goAfterTurn = false;
+      }
+      else{
+        state = wait;
+      }
+      add = true;
     }
   }
   else if(isStable(InputL, SetpointL, 3)){
@@ -152,21 +173,25 @@ void turn(double deg){
 }
 
 void straight(int dist){
+  Serial.println(dist);
+  InputL = encL.read()*0.1340413;
+  InputR = encR.read()*0.1340413;
   if(add){
+    inL = InputL;
+    inR = InputR;
     SetpointL += dist;
     SetpointR += dist;
     startError = InputL - InputR;
     add = false;
   }
-  InputL = encL.read()*0.1340413;
-  InputR = encR.read()*0.1340413;
-  turnError = ((InputL - InputR)-startError)*KpStright;
+
+  turnError = (((InputL-inL) - (InputR-inR))-startError)*KpStright;
   runPIDS(dist);
   if(firstCheck){
     if(isStable(InputR, SetpointR, 3)){
       firstCheck = false;
-      //State = turnLeft;
-      //add = true;
+      state = wait;
+      add = true;
     }
   }
   else if(isStable(InputL, SetpointL, 3)){
@@ -177,11 +202,22 @@ void straight(int dist){
 void runState(){
   switch(state){
     case turnState:
-      turn(3);
+      turn(turnAngle);
       break;
 
     case straightState:
-      straight(700);
+      straight(goDistance);
+      break;
+
+    case wait:
+      R.write(90);
+      L.write(90);
+      break;
+
+    case blowCandle:
+      break;
+
+    case goBack:
       break;
   }
 }
@@ -192,6 +228,7 @@ void setup() {
   L.attach(11);
   Serial.begin(9600);
   Serial.println("Initalized");
+  Serial3.begin(115200);
   PIDL.SetMode(AUTOMATIC);
   PIDR.SetMode(AUTOMATIC);
   SetpointL = 0;
@@ -200,9 +237,26 @@ void setup() {
   PIDR.SetTunings(Kp, Ki, Kd);
   PIDL.SetOutputLimits(-30, 30);
   PIDR.SetOutputLimits(-30, 30);
-  state = turnState;
+  state = wait;
 }
 
 void loop() {
   runState();
+
+  if(Serial3.available() > 0){
+      char com = Serial3.read();
+      if(com == '*'){
+        str = Serial3.readStringUntil('\n');
+        state = turnState;
+        goAfterTurn = false;
+        turnAngle = str.toInt();
+      }
+      else if(com == '#'){
+        str = Serial3.readStringUntil('\n');
+        turnAngle = str.substring(0,3).toInt()-200;
+        goDistance = str.substring(3).toInt();
+        state = turnState;
+        goAfterTurn = true;
+      }
+  }
 }
