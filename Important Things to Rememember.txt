@@ -1,0 +1,29 @@
+Motor Info
+	20- full forward
+	160- full backward
+
+Encoder Info
+	Add encoder ticks is forward
+	Subtract Encoder ticks is backwards
+	1500 ticks/rev
+	Wheel Diam = 64mm
+	Wheel Circum = 201.06mm
+	mm/tick = 0.1340413
+	
+PID INFO
+	when setpoints are positive have to do 180 - output for motor values
+
+
+
+prev1 = 0
+prev2=0
+prev3
+
+
+bool isStable(input, desired, range){
+if(){
+}
+else{
+prev10 = prev9
+...
+prev1 = input
