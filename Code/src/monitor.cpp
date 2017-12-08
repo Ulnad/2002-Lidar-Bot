@@ -91,6 +91,8 @@ uint8_t textfield_i=0;
 #define STATUS_X 10
 #define STATUS_Y 65
 
+
+
 Adafruit_GFX_Button buttons[2];
 /* create 15 buttons, in classic candybar phone style */
 char buttonlabels[3][10] = {"Go", "Show Map", "Show Data"};
@@ -128,7 +130,7 @@ void Monitor::setup(){
   buttons[1].drawButton();
 }
 
-void Monitor::run(int print,int max, int x[], int y[]){
+bool Monitor::run(int print,int max, int x[], int y[]){
   if(_state == 1){
     digitalWrite(13, HIGH);
     TSPoint p = ts.getPoint();
@@ -164,6 +166,7 @@ void Monitor::run(int print,int max, int x[], int y[]){
     }
   }
   else if(_state == 2){
+    return true;
   }
   // 480x320
   else if(_state == 3){
@@ -182,6 +185,7 @@ void Monitor::run(int print,int max, int x[], int y[]){
     tft.setCursor(30,450);
     tft.print(print);
   }
+  return false;
 
 }
 
