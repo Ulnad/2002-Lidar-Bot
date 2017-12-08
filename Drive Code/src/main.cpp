@@ -5,11 +5,11 @@
 
 double SetpointL, InputL, OutputL;
 double SetpointR, InputR, OutputR;
-const double Kp =2.8, Ki = 0.01, Kd = 0;
-const double Kpt =4.9, Kit = 0.01, Kdt = 0.07;
+const double Kp =2.2, Ki = 0.01, Kd = 0.1;
+const double Kpt =4.9, Kit = 0.01, Kdt = 0.08;
 const double Kp1 = 1.1, Ki1 = 0.01, Kd1 = 0.1;
-const double KpTurn = 6;
-const double KpStright = 2.5;
+const double KpTurn = 3;
+const double KpStright = 1.6;
 
 PID PIDL(&InputL, &OutputL, &SetpointL, Kp, Ki, Kd, DIRECT);
 PID PIDR(&InputR, &OutputR, &SetpointR, Kp, Ki, Kd, DIRECT);
@@ -160,6 +160,8 @@ void turn(double inp){//takes -180 to 360
       if(goAfterTurn){
         state = straightState;
         goAfterTurn = false;
+        encL.write(0);
+        encR.write(0);
       }
       else{
         state = wait;
@@ -184,17 +186,16 @@ void straight(int dist){
     startError = InputL - InputR;
     add = false;
   }
-
   turnError = (((InputL-inL) - (InputR-inR))-startError)*KpStright;
   runPIDS(dist);
   if(firstCheck){
-    if(isStable(InputR, SetpointR, 3)){
+    if(isStable(InputR, SetpointR, 4)){
       firstCheck = false;
       state = wait;
       add = true;
     }
   }
-  else if(isStable(InputL, SetpointL, 3)){
+  else if(isStable(InputL, SetpointL, 4)){
     firstCheck = true;
   }
 }
@@ -235,12 +236,13 @@ void setup() {
   SetpointR = 0;
   PIDL.SetTunings(Kp, Ki, Kd);
   PIDR.SetTunings(Kp, Ki, Kd);
-  PIDL.SetOutputLimits(-30, 30);
-  PIDR.SetOutputLimits(-30, 30);
+  PIDL.SetOutputLimits(-34, 34);
+  PIDR.SetOutputLimits(-34, 34);
   state = wait;
 }
 
 void loop() {
+
   runState();
 
   if(Serial3.available() > 0){
