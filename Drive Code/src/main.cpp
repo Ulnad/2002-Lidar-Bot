@@ -79,12 +79,12 @@ void runPID(){
   PIDR.Compute();
   L.write(180-mapToServo((OutputL-turnError)/1.5));
   R.write(180-mapToServo((OutputR-turnError)/1.5));
-  Serial.print("R:");
-  Serial.print(InputR);
-  Serial.print(SetpointR);
-  Serial.print("L:");
-  Serial.print(InputL);
-  Serial.println(SetpointL);
+  // Serial.print("R:");
+  // Serial.print(InputR);
+  // Serial.print(SetpointR);
+  // Serial.print("L:");
+  // Serial.print(InputL);
+  // Serial.println(SetpointL);
 }
 
 // void left90(){

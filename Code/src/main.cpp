@@ -41,6 +41,7 @@ int findGoAngle(){
         if(negEdge){
           addAngle = degrees(asin((double)350/(double)distNEG));
           driveDist = distNEG;
+
         }//235
         else{
           addAngle = degrees(asin((double)190/(double)distPOS));
@@ -57,7 +58,7 @@ int findGoAngle(){
         if(negEdge){
           negEdge = false;
           acc = 1;
-          if(edgeAngle<0 || (abs(distPOS - distNEG) < minWallSpace || distPOS>2450 || distNEG>2450) ){
+          if(edgeAngle<0 || (abs(distPOS - distNEG) < minWallSpace || distPOS>2450 || distNEG>2450 || distPOS<200 || distNEG<200 ) ){
 
             return -999;
 
@@ -67,7 +68,7 @@ int findGoAngle(){
         }
         else{
           acc=1;
-          if(edgeAngle<0 || (abs(distPOS - distNEG) < minWallSpace || distPOS>2450 || distNEG>2450)){
+          if(edgeAngle<0 || (abs(distPOS - distNEG) < minWallSpace || distPOS>2450 || distNEG>2450 || distPOS<200 || distNEG<200)){
             return -999;
           }
           return edgeAngle-addAngle;
@@ -173,7 +174,7 @@ int findCandle(){
 }
 //FUNCTIONS:
 void updateFrame(){
-  maxDist = 0;
+  maxDist = 10;
   for(int i = 0; i < 180; i++){
     if(position[i]>maxDist)
       maxDist = position[i];
@@ -210,7 +211,7 @@ void runState(){
       else{
         Serial3.print('*');
         Serial3.println(blowAngle);
-        Serial.print(blowAngle);
+        // Serial.print(blowAngle);
       }
       break;
     case idle:
@@ -223,8 +224,8 @@ void runState(){
         Serial3.print('#');
         Serial3.print(String(x+200));
         Serial3.println(String(driveDist+350));
-               Serial.print('#');
-                Serial.println(String(x));
+               // Serial.print('#');
+               //  Serial.println(String(x));
         state = idle;
       }
       break;
@@ -243,8 +244,8 @@ void loop() {
         }
   }
   else{
-  if(millis() % 1200 == 600)
-    updateFrame();
+  //if(millis() % 1200 == 600)
+    //updateFrame();
   if(millis() % 1200 == 0)
     inita = screen.run(blowAngle,maxDist,x,y);
     if(inita && !start){
